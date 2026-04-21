@@ -2,7 +2,7 @@ import logging
 
 from etl_pipeline.config import PipelineConfig
 from etl_pipeline.extract import extract_sales_data
-from etl_pipeline.load import load_curated_data, write_run_metadata
+from etl_pipeline.load import load_curated_data, load_curated_data_to_postgres, write_run_metadata
 from etl_pipeline.logging_config import configure_logging
 from etl_pipeline.models import PipelineMetrics
 from etl_pipeline.transform import transform_sales_data
@@ -22,6 +22,18 @@ def run_pipeline(config: PipelineConfig | None = None) -> PipelineMetrics:
     logger.info("Transform completed with %s rows", len(curated_df))
 
     loaded_count = load_curated_data(curated_df, resolved_config.curated_output_path)
+    if resolved_config.enable_postgres_load:
+        postgres_loaded_count = load_curated_data_to_postgres(
+            curated_df,
+            postgres_url=resolved_config.postgres_url,
+            table_name=resolved_config.postgres_table_name,
+        )
+        logger.info(
+            "PostgreSQL load completed with %s rows into table %s",
+            postgres_loaded_count,
+            resolved_config.postgres_table_name,
+        )
+
     metrics = PipelineMetrics(
         rows_extracted=len(raw_df),
         rows_transformed=len(curated_df),

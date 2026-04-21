@@ -5,26 +5,35 @@ Summary: A simple, portfolio-ready ETL pipeline with industry-standard structure
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: pandas>=2.2.0
+Requires-Dist: sqlalchemy>=2.0.0
+Requires-Dist: psycopg[binary]>=3.2.0
 Provides-Extra: dev
 Requires-Dist: pytest>=8.0.0; extra == "dev"
 
-# Simple ETL Pipeline (Portfolio Project)
+# Portfolio ETL Pipeline
 
-This project demonstrates a clean, production-style ETL pipeline in Python:
+A simple, production-style ETL project in Python for portfolio use.
+It demonstrates modular design, data quality checks, logging, metadata tracking, and unit tests.
 
-- **Extract**: reads raw sales data from CSV
-- **Transform**: validates schema, cleans nulls, standardizes types, derives business metrics
-- **Load**: writes curated output to CSV and captures pipeline metadata
+## Overview
 
-## Why this is portfolio-ready
+This pipeline processes raw sales data and produces curated analytics-ready output.
 
-- Modular architecture (`extract`, `transform`, `load`, `pipeline`)
-- Config-driven paths and runtime settings
-- Structured logging
-- Basic data quality validation
-- Unit tests for core transformations
+- **Extract:** Read raw data from CSV.
+- **Transform:** Validate schema, clean records, convert types, and derive metrics.
+- **Load:** Save curated data and run metadata.
 
-## Project structure
+## Tech Stack
+
+- Python
+- Pandas
+- SQLAlchemy
+- PostgreSQL (optional load target)
+- Pytest
+- GitHub Actions (CI)
+- Docker and Docker Compose
+
+## Project Structure
 
 ```text
 .
@@ -38,18 +47,31 @@ This project demonstrates a clean, production-style ETL pipeline in Python:
 |       |-- __init__.py
 |       |-- config.py
 |       |-- extract.py
+|       |-- transform.py
 |       |-- load.py
 |       |-- logging_config.py
 |       |-- models.py
-|       |-- pipeline.py
-|       `-- transform.py
+|       `-- pipeline.py
 `-- tests
     `-- test_transform.py
 ```
 
-## Quick start
+## Features
 
-1. Create a virtual environment and install:
+- Modular ETL layers (`extract`, `transform`, `load`)
+- Config-driven paths via `PipelineConfig`
+- Structured logging to file and console
+- Data quality validation and filtering
+- Optional PostgreSQL load target
+- Derived business metrics:
+  - `gross_revenue = quantity * unit_price`
+  - `net_revenue = gross_revenue * (1 - discount_pct)`
+- Run metadata output (timestamp + row counts)
+- Unit tests for transform logic
+
+## Quick Start
+
+1. Install dependencies:
 
 ```bash
 pip install -e ".[dev]"
@@ -61,23 +83,103 @@ pip install -e ".[dev]"
 python -m etl_pipeline.pipeline
 ```
 
-3. Check outputs:
+3. Run tests:
 
-- Curated data: `data/curated/sales_curated.csv`
+```bash
+pytest
+```
+
+## PostgreSQL Load (Optional)
+
+The pipeline can also load curated data into PostgreSQL.
+
+Set environment variables:
+
+```bash
+ENABLE_POSTGRES_LOAD=true
+POSTGRES_URL=postgresql+psycopg://etl_user:etl_password@localhost:5432/etl_db
+POSTGRES_TABLE_NAME=sales_curated
+```
+
+Then run:
+
+```bash
+python -m etl_pipeline.pipeline
+```
+
+If `ENABLE_POSTGRES_LOAD` is not `true`, the pipeline only writes CSV and metadata files.
+
+## Docker Setup
+
+1. Start PostgreSQL and run ETL in containers:
+
+```bash
+docker compose up --build
+```
+
+2. Stop containers:
+
+```bash
+docker compose down
+```
+
+The Compose setup runs:
+- `postgres` (database service)
+- `etl` (pipeline runner service)
+
+## CI Pipeline
+
+GitHub Actions workflow is included at `.github/workflows/ci.yml`.
+It runs on push and pull requests, installs dependencies, and executes `pytest`.
+
+## Output Files
+
+After running, check:
+
+- Curated dataset: `data/curated/sales_curated.csv`
 - Run metadata: `data/curated/pipeline_run_metadata.json`
 - Logs: `logs/pipeline.log`
 
-## Example business logic included
+## Project Creation Flow
 
-- Filters invalid rows (`quantity <= 0`, `unit_price <= 0`)
-- Standardizes date parsing
-- Derives:
-  - `gross_revenue = quantity * unit_price`
-  - `net_revenue = gross_revenue * (1 - discount_pct)`
+This is the sequence used to build this project:
 
-## Next steps (optional enhancements)
+1. Define use case (sales ETL for analytics output)
+2. Create modular folder and package structure
+3. Centralize paths and settings in config
+4. Build extract module with input validation
+5. Build transform module for cleaning and business logic
+6. Build load module for curated output and metadata
+7. Add logging for observability
+8. Add tests for transformation rules
+9. Run end-to-end and verify artifacts
 
-- Add a real data source (API, S3, database)
-- Load into a warehouse table (PostgreSQL, BigQuery, Snowflake)
-- Add orchestration (Airflow/Prefect)
-- Add CI (GitHub Actions) for tests and linting
+## Concepts Used
+
+- **ETL pattern:** Extract -> Transform -> Load
+- **Separation of concerns:** One responsibility per module
+- **Config-driven design:** Environment and path flexibility
+- **Data quality checks:** Required columns, valid types, valid rows
+- **Observability:** Logging and run-level metadata
+- **Testability:** Unit tests for core transformations
+
+## Runtime Flow
+
+When running `python -m etl_pipeline.pipeline`:
+
+1. Load config and initialize logging
+2. Extract raw CSV into DataFrame
+3. Transform and validate data
+4. Load curated output CSV
+5. Write pipeline metadata JSON
+6. Return run metrics
+
+## Portfolio Pitch (Short)
+
+"Built a production-style ETL pipeline in Python with modular architecture, data validation, derived business metrics, structured logging, run metadata, and unit tests."
+
+## Next Improvements
+
+- Add orchestration (Prefect or Airflow)
+- Add linting checks in CI (ruff/black)
+- Add incremental loading with watermark logic
