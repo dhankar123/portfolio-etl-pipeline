@@ -1,0 +1,83 @@
+Metadata-Version: 2.4
+Name: portfolio-etl-pipeline
+Version: 0.1.0
+Summary: A simple, portfolio-ready ETL pipeline with industry-standard structure.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=2.2.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+
+# Simple ETL Pipeline (Portfolio Project)
+
+This project demonstrates a clean, production-style ETL pipeline in Python:
+
+- **Extract**: reads raw sales data from CSV
+- **Transform**: validates schema, cleans nulls, standardizes types, derives business metrics
+- **Load**: writes curated output to CSV and captures pipeline metadata
+
+## Why this is portfolio-ready
+
+- Modular architecture (`extract`, `transform`, `load`, `pipeline`)
+- Config-driven paths and runtime settings
+- Structured logging
+- Basic data quality validation
+- Unit tests for core transformations
+
+## Project structure
+
+```text
+.
+|-- data
+|   |-- raw
+|   |   `-- sales_raw.csv
+|   `-- curated
+|-- logs
+|-- src
+|   `-- etl_pipeline
+|       |-- __init__.py
+|       |-- config.py
+|       |-- extract.py
+|       |-- load.py
+|       |-- logging_config.py
+|       |-- models.py
+|       |-- pipeline.py
+|       `-- transform.py
+`-- tests
+    `-- test_transform.py
+```
+
+## Quick start
+
+1. Create a virtual environment and install:
+
+```bash
+pip install -e ".[dev]"
+```
+
+2. Run the pipeline:
+
+```bash
+python -m etl_pipeline.pipeline
+```
+
+3. Check outputs:
+
+- Curated data: `data/curated/sales_curated.csv`
+- Run metadata: `data/curated/pipeline_run_metadata.json`
+- Logs: `logs/pipeline.log`
+
+## Example business logic included
+
+- Filters invalid rows (`quantity <= 0`, `unit_price <= 0`)
+- Standardizes date parsing
+- Derives:
+  - `gross_revenue = quantity * unit_price`
+  - `net_revenue = gross_revenue * (1 - discount_pct)`
+
+## Next steps (optional enhancements)
+
+- Add a real data source (API, S3, database)
+- Load into a warehouse table (PostgreSQL, BigQuery, Snowflake)
+- Add orchestration (Airflow/Prefect)
+- Add CI (GitHub Actions) for tests and linting

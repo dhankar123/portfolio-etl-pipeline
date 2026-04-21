@@ -1,0 +1,5 @@
+2026-04-21 16:49:26,015 | INFO | __main__ | Starting ETL pipeline run
+2026-04-21 16:49:26,018 | INFO | __main__ | Extract completed with 7 rows
+2026-04-21 16:49:26,026 | INFO | __main__ | Transform completed with 4 rows
+2026-04-21 16:49:26,033 | INFO | __main__ | Load completed with 4 rows
+2026-04-21 16:49:26,033 | INFO | __main__ | ETL pipeline run finished successfully
